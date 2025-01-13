@@ -4,36 +4,17 @@
 # or the team behind the great Starknet tools if you need help!
 # NB: Lots of this code are copied from the different installers of each tools used here.
 
-### Tools
+### Global Variables
 
 BASE_DIR=${XDG_CONFIG_HOME:-$HOME}
+LOCAL_BIN="${BASE_DIR}/.local/bin"
 LOCAL_BIN_ESCAPED="\$HOME/.local/bin"
-_PROFILE=""
-_PREF_SHELL=""
-case ${SHELL:-""} in
-*/zsh)
-  _PROFILE=$BASE_DIR/.zshrc
-  _PREF_SHELL=zsh
-  ;;
-*/ash)
-  _PROFILE=$BASE_DIR/.profile
-  _PREF_SHELL=ash
-  ;;
-*/bash)
-  _PROFILE=$BASE_DIR/.bashrc
-  _PREF_SHELL=bash
-  ;;
-*/fish)
-  _PROFILE=$BASE_DIR/.config/fish/config.fish
-  _PREF_SHELL=fish
-  ;;
-*)
-  err "could not detect shell, manually add '${LOCAL_BIN_ESCAPED}' to your PATH."
-  ;;
-esac
+
+
+### Tools
 
 say() {
-  printf 'starknet-installer: %s\n' "$1"
+  echo "stark_it: $1"
 }
 
 err() {
@@ -52,9 +33,10 @@ need_cmd() {
 }
 
 
-### Install Starkli
+### Installers
 
-echo "Installing Starkli..."
+install_starkli () {
+  need_cmd curl
 STARKLI_DIR=${STARKLI_DIR-"$BASE_DIR/.starkli"}
 STARKLI_ENV_PATH="$STARKLI_DIR/env"
 STARKLI_ENV_FISH_PATH="$STARKLI_DIR/env-fish"
@@ -88,26 +70,50 @@ if ! check_cmd starkli; then
     # todo: add a check for install folder to debug (or a prompt for user to do so)
     err "Error while installing 'starkli' (command not found)"
 fi
-echo "Starkli has been installed successfully."
+}
 
+install_scarb () {
+  _PROFILE=""
+  # _PREF_SHELL=""
+  case ${SHELL:-""} in
+  */zsh)
+    _PROFILE=$BASE_DIR/.zshrc
+    # _PREF_SHELL=zsh
+    ;;
+  */ash)
+    _PROFILE=$BASE_DIR/.profile
+    # _PREF_SHELL=ash
+    ;;
+  */bash)
+    _PROFILE=$BASE_DIR/.bashrc
+    # _PREF_SHELL=bash
+    ;;
+  */fish)
+    _PROFILE=$BASE_DIR/.config/fish/config.fish
+    # _PREF_SHELL=fish
+    ;;
+  *)
+    err "could not detect shell, manually add '${LOCAL_BIN_ESCAPED}' to your PATH."
+    ;;
+  esac
 
-### Scarb
+  need_cmd curl
 
-echo "Installing Scarb..."
 curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh
 source ${_PROFILE}
-echo "Scarb has been installed successfully."
+}
 
 
-# TODO: resume from here
-### snfoundry
+### Main script
 
-echo "Installing snfoundry..."
-echo "snfoundry has been installed successfully."
+main () {
+  say "Installing Starkli..."
+  install_starkli
+  say "Starkli has been installed successfully."
 
+  say "Installing Scarb..."
+  install_scarb
+  say "Scarb has been installed successfully."
 
-### Rust
-
-echo "Installing Rust..."
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-echo "Rust has been installed successfully."
+}
+main
