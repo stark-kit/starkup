@@ -71,6 +71,20 @@ install_scarb () {
   fi
 }
 
+install_rust () {
+  need_cmd curl
+
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+  # Adds binary directory to PATH (user will need to restart the terminal)
+  export PATH="$HOME/.cargo/bin:$PATH"
+
+  if ! check_cmd rustc; then
+      # todo: add a check for install folder to debug (or a prompt for user to do so)
+      err "Error while installing 'rustc' (command not found)"
+  fi
+}
+
 install_snfoundry () {
   SNFOUNDRYUP_URL="https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/snfoundryup"
   SNFOUNDRYUP_PATH="${LOCAL_BIN}/snfoundryup"
@@ -78,6 +92,9 @@ install_snfoundry () {
   need_cmd curl
   need_cmd mkdir
   need_cmd chmod
+
+  # snfoundry needs rust first
+  install_rust
 
   # todo: setup func for local_bin and others
   mkdir -p "${LOCAL_BIN}"
