@@ -100,7 +100,12 @@ install_scarb () {
   need_cmd curl
 
   curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh
-  source ${_PROFILE}
+  . ${_PROFILE}
+
+  if ! check_cmd scarb; then
+      # todo: add a check for install folder to debug (or a prompt for user to do so)
+      err "Error while installing 'scarb' (command not found)"
+  fi
 }
 
 install_snfoundry () {
@@ -124,13 +129,18 @@ install_snfoundry () {
 
   if ! check_cmd snfoundryup; then
       # todo: add a check for install folder to debug (or a prompt for user to do so)
-      err "Error while installing 'starkliup' (command not found)"
+      err "Error while installing 'snfoundryup' (command not found)"
   fi
   snfoundryup
 
-  if ! check_cmd snfoundry; then
+  if ! check_cmd snforge; then
       # todo: add a check for install folder to debug (or a prompt for user to do so)
-      err "Error while installing 'starkli' (command not found)"
+      err "Error while installing 'snforge' (command not found)"
+  fi
+
+  if ! check_cmd sncast; then
+      # todo: add a check for install folder to debug (or a prompt for user to do so)
+      err "Error while installing 'sncast' (command not found)"
   fi
 }
 
