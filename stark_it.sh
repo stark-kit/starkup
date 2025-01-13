@@ -1,3 +1,4 @@
+#!/bin/sh
 # One liner installer for Starknet dev toolchains.
 # This script aims to work with unix distro (MacOS, Linux, WSL, ...)
 # As this is a WIP, error may appears. Please report to us 
