@@ -37,39 +37,39 @@ need_cmd() {
 
 install_starkli () {
   need_cmd curl
-STARKLI_DIR=${STARKLI_DIR-"$BASE_DIR/.starkli"}
-STARKLI_ENV_PATH="$STARKLI_DIR/env"
-STARKLI_ENV_FISH_PATH="$STARKLI_DIR/env-fish"
+  STARKLI_DIR=${STARKLI_DIR-"$BASE_DIR/.starkli"}
+  STARKLI_ENV_PATH="$STARKLI_DIR/env"
+  STARKLI_ENV_FISH_PATH="$STARKLI_DIR/env-fish"
 
-# fish shell detection
-IS_FISH_SHELL=""
-if [ -n "$FISH_VERSION" ]; then
-    IS_FISH_SHELL="1"
-fi
-case $SHELL in
-    */fish)
-        IS_FISH_SHELL="1"
-        ;;
-esac
+  # fish shell detection
+  IS_FISH_SHELL=""
+  if [ -n "$FISH_VERSION" ]; then
+      IS_FISH_SHELL="1"
+  fi
+  case $SHELL in
+      */fish)
+          IS_FISH_SHELL="1"
+          ;;
+  esac
 
-curl https://get.starkli.sh | sh
+  curl https://get.starkli.sh | sh
 
-if [ -n "$IS_FISH_SHELL" ]; then
-        . ${STARKLI_ENV_FISH_PATH}
-    else
-        . ${STARKLI_ENV_PATH}
-    fi
+  if [ -n "$IS_FISH_SHELL" ]; then
+          . ${STARKLI_ENV_FISH_PATH}
+      else
+          . ${STARKLI_ENV_PATH}
+      fi
 
-if ! check_cmd starkliup; then
-    # todo: add a check for install folder to debug (or a prompt for user to do so)
-    err "Error while installing 'starkliup' (command not found)"
-fi
-starkliup
+  if ! check_cmd starkliup; then
+      # todo: add a check for install folder to debug (or a prompt for user to do so)
+      err "Error while installing 'starkliup' (command not found)"
+  fi
+  starkliup
 
-if ! check_cmd starkli; then
-    # todo: add a check for install folder to debug (or a prompt for user to do so)
-    err "Error while installing 'starkli' (command not found)"
-fi
+  if ! check_cmd starkli; then
+      # todo: add a check for install folder to debug (or a prompt for user to do so)
+      err "Error while installing 'starkli' (command not found)"
+  fi
 }
 
 install_scarb () {
@@ -99,8 +99,39 @@ install_scarb () {
 
   need_cmd curl
 
-curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh
-source ${_PROFILE}
+  curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh
+  source ${_PROFILE}
+}
+
+install_snfoundry () {
+  SNFOUNDRYUP_URL="https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/snfoundryup"
+  SNFOUNDRYUP_PATH="${LOCAL_BIN}/snfoundryup"
+
+  need_cmd curl
+  need_cmd mkdir
+  need_cmd chmod
+
+  # todo: setup func for local_bin and others
+  mkdir -p "${LOCAL_BIN}"
+  curl -# -L "${SNFOUNDRYUP_URL}" -o "${SNFOUNDRYUP_PATH}"
+  chmod +x "${SNFOUNDRYUP_PATH}"
+
+  if [ -n "$IS_FISH_SHELL" ]; then
+          . ${STARKLI_ENV_FISH_PATH}
+      else
+          . ${STARKLI_ENV_PATH}
+      fi
+
+  if ! check_cmd snfoundryup; then
+      # todo: add a check for install folder to debug (or a prompt for user to do so)
+      err "Error while installing 'starkliup' (command not found)"
+  fi
+  snfoundryup
+
+  if ! check_cmd snfoundry; then
+      # todo: add a check for install folder to debug (or a prompt for user to do so)
+      err "Error while installing 'starkli' (command not found)"
+  fi
 }
 
 
@@ -115,5 +146,9 @@ main () {
   install_scarb
   say "Scarb has been installed successfully."
 
+  say "Installing snfoundry..."
+  install_snfoundry
+  say "snfoundry has been installed successfully."
 }
+
 main
