@@ -9,7 +9,6 @@
 
 BASE_DIR=${XDG_CONFIG_HOME:-$HOME}
 LOCAL_BIN="${BASE_DIR}/.local/bin"
-LOCAL_BIN_ESCAPED="\$HOME/.local/bin"
 
 
 ### Tools
@@ -39,27 +38,11 @@ need_cmd() {
 install_starkli () {
   need_cmd curl
   STARKLI_DIR=${STARKLI_DIR-"$BASE_DIR/.starkli"}
-  STARKLI_ENV_PATH="$STARKLI_DIR/env"
-  STARKLI_ENV_FISH_PATH="$STARKLI_DIR/env-fish"
-
-  # fish shell detection
-  IS_FISH_SHELL=""
-  if [ -n "$FISH_VERSION" ]; then
-      IS_FISH_SHELL="1"
-  fi
-  case $SHELL in
-      */fish)
-          IS_FISH_SHELL="1"
-          ;;
-  esac
 
   curl https://get.starkli.sh | sh
 
-  if [ -n "$IS_FISH_SHELL" ]; then
-          . ${STARKLI_ENV_FISH_PATH}
-      else
-          . ${STARKLI_ENV_PATH}
-      fi
+  # Adds binary directory to PATH (user will need to restart a terminal)
+  export PATH="$STARKLI_DIR/bin:$PATH"
 
   if ! check_cmd starkliup; then
       # todo: add a check for install folder to debug (or a prompt for user to do so)
@@ -74,34 +57,13 @@ install_starkli () {
 }
 
 install_scarb () {
-  _PROFILE=""
-  # _PREF_SHELL=""
-  case ${SHELL:-""} in
-  */zsh)
-    _PROFILE=$BASE_DIR/.zshrc
-    # _PREF_SHELL=zsh
-    ;;
-  */ash)
-    _PROFILE=$BASE_DIR/.profile
-    # _PREF_SHELL=ash
-    ;;
-  */bash)
-    _PROFILE=$BASE_DIR/.bashrc
-    # _PREF_SHELL=bash
-    ;;
-  */fish)
-    _PROFILE=$BASE_DIR/.config/fish/config.fish
-    # _PREF_SHELL=fish
-    ;;
-  *)
-    err "could not detect shell, manually add '${LOCAL_BIN_ESCAPED}' to your PATH."
-    ;;
-  esac
-
   need_cmd curl
 
   curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh
-  . ${_PROFILE}
+
+  # Adds binary directory to PATH (user will need to restart the terminal)
+  export PATH="$LOCAL_BIN/:$PATH"
+  
 
   if ! check_cmd scarb; then
       # todo: add a check for install folder to debug (or a prompt for user to do so)
@@ -122,11 +84,8 @@ install_snfoundry () {
   curl -# -L "${SNFOUNDRYUP_URL}" -o "${SNFOUNDRYUP_PATH}"
   chmod +x "${SNFOUNDRYUP_PATH}"
 
-  if [ -n "$IS_FISH_SHELL" ]; then
-          . ${STARKLI_ENV_FISH_PATH}
-      else
-          . ${STARKLI_ENV_PATH}
-      fi
+  # Adds binary directory to PATH (user will need to restart the terminal)
+  export PATH="$LOCAL_BIN/:$PATH"
 
   if ! check_cmd snfoundryup; then
       # todo: add a check for install folder to debug (or a prompt for user to do so)
