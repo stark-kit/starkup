@@ -1,3 +1,8 @@
+# One liner installer for Starknet dev toolchains.
+# This script aims to work with windows distro
+# As this is a WIP, error may appears. Please report to us 
+# or the team behind the great Starknet tools if you need help!
+
 ### Tools
 
 function Get-HostTriple {
@@ -22,6 +27,7 @@ function Install-Rust {
     # winget install Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
     Remove-Item $exePath
 
+    # temporary path modification since Rust does it itself, but doesn't propagate to current session
     $env:Path = "$env:Path;$env:USERPROFILE\.cargo\bin"
     
     cargo --version
@@ -32,7 +38,13 @@ function Install-Rust {
 }
 
 function Install-Starkli {
+    Write-Host "Installing Starkli..." -ForegroundColor Cyan
+
     cargo install --locked --git https://github.com/xJonathanLEI/starkli
+    starkli --version
+
+    Write-Host "Starkli installed" -ForegroundColor Green
+}
 
 function Install-Scarb {
     Write-Host "Installing Scarb..." -ForegroundColor Cyan
@@ -69,20 +81,31 @@ function Install-Scarb {
     Write-Host "Scarb installed" -ForegroundColor Green
 }
 
+### Main script
+
 function main {
     # install rust if not already present
     if (-Not (Get-Command cargo -errorAction SilentlyContinue)) {
         Install-Rust
+    }
+    else {
+        Write-Host "Rust is already installed on your machine!" -ForegroundColor Cyan
     }
 
     # install starkli
     if (-Not (Get-Command starkli -errorAction SilentlyContinue)) {
     Install-Starkli
     }
+    else {
+        Write-Host "Starkli is already installed on your machine!" -ForegroundColor Cyan
+    }
 
     # install scarb
     if (-Not (Get-Command scarb -errorAction SilentlyContinue)) {
         Install-Scarb
+    }
+    else {
+        Write-Host "Scarb is already installed on your machine!" -ForegroundColor Cyan
     }
 }
 
