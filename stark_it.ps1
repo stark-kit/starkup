@@ -17,10 +17,8 @@ function Install-Rust {
     Write-Host "Installing Rust..." -ForegroundColor Cyan
     $exePath = "$env:TEMP\rustup-init.exe"
 
-    Write-Host "Downloading..."
     (New-Object Net.WebClient).DownloadFile('https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe', $exePath)
     
-    Write-Host "Installing..."
     ## use this AND prompt user to install visual studio libraries in order for rust to work
     cmd /c start /wait $exePath
     ## automatic installation of visual studio libraries
@@ -81,6 +79,46 @@ function Install-Scarb {
     Write-Host "Scarb installed" -ForegroundColor Green
 }
 
+function Install-SierraCompiler {
+    Write-Host "Installing Universal Sierra Compiler..." -ForegroundColor Cyan
+    $hostTriple = Get-HostTriple
+
+    # resolve latest version from github API
+    $githubAPIContent = Invoke-WebRequest -Uri "https://api.github.com/repos/software-mansion/universal-sierra-compiler/releases/latest"
+    $content = $githubAPIContent.Content | ConvertFrom-JSON
+    $compatibleContent = $content.assets.where{ $_.name -Match $hostTriple }
+    $archiveFilename = $compatibleContent.name
+    $tempPath = "$env:TEMP\SierraCompilerTemp"
+
+    # download sierra compiler
+    $sierraCompilerURL = $compatibleContent.browser_download_url
+    $archivePath = "$env:TEMP\$archiveFilename"
+    (New-Object Net.WebClient).DownloadFile($sierraCompilerURL, $archivePath)
+
+    # install sierra compiler
+    $installPath = "$env:LOCALAPPDATA\Programs\universal-sierra-compiler"
+    Expand-Archive -Force -Path "$archivePath" -DestinationPath $tempPath
+    Move-Item -Path "$tempPath\*" -Destination $installPath -Force
+    Remove-Item -Recurse $archivePath
+    Remove-Item -Recurse $tempPath
+
+    # add sierra compiler path to environment
+    if (! ("$env:PATH" -match [regex]::Escape("$installPath\\bin"))) {
+        [Environment]::SetEnvironmentVariable("Path", $env:Path + ";$installPath\bin", "User") # todo: change Machine Path instead of User
+    }
+
+    # test
+    $env:Path = "$env:Path;$installPath\bin"
+    universal-sierra-compiler --version
+
+    Write-Host "Universal Sierra Compiler installed" -ForegroundColor Green
+}
+
+function Install-snfoundry {
+    Install-SierraCompiler
+}
+
+
 ### Main script
 
 function main {
@@ -106,6 +144,14 @@ function main {
     }
     else {
         Write-Host "Scarb is already installed on your machine!" -ForegroundColor Cyan
+    }
+
+    # install snfoundry
+    if (-Not (Get-Command snfoundry -errorAction SilentlyContinue)) {
+        Install-snfoundry
+    }
+    else {
+        Write-Host "snfoundry is already installed on your machine!" -ForegroundColor Cyan
     }
 }
 
