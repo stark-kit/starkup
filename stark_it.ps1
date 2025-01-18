@@ -27,7 +27,6 @@ function Install-Rust {
 
     # temporary path modification since Rust does it itself, but doesn't propagate to current session
     $env:Path = "$env:Path;$env:USERPROFILE\.cargo\bin"
-    
     cargo --version
     rustup --version
     rustc --version
@@ -115,7 +114,44 @@ function Install-SierraCompiler {
 }
 
 function Install-snfoundry {
+    # install sierra compiler
+    if (-Not (Get-Command universal-sierra-compiler -errorAction SilentlyContinue)) {
     Install-SierraCompiler
+    }
+
+    Write-Host "Installing snfoundry..." -ForegroundColor Cyan
+    $hostTriple = Get-HostTriple
+
+    # resolve latest version from github API
+    $githubAPIContent = Invoke-WebRequest -Uri "https://api.github.com/repos/foundry-rs/starknet-foundry/releases/latest"
+    $content = $githubAPIContent.Content | ConvertFrom-JSON
+    $compatibleContent = $content.assets.where{ $_.name -Match $hostTriple }
+    $archiveFilename = $compatibleContent.name
+    $tempPath = "$env:TEMP\snfoundryTemp"
+
+    # download snfoundry
+    $snfoundryURL = $compatibleContent.browser_download_url
+    $archivePath = "$env:TEMP\$archiveFilename"
+    (New-Object Net.WebClient).DownloadFile($snfoundryURL, $archivePath)
+
+    # install snfoundry
+    $installPath = "$env:LOCALAPPDATA\Programs\snfoundry"
+    Expand-Archive -Force -Path "$archivePath" -DestinationPath $tempPath
+    Move-Item -Path "$tempPath\*" -Destination $installPath -Force
+    Remove-Item -Recurse $archivePath
+    Remove-Item -Recurse $tempPath
+
+    # add snfoundry path to environment
+    if (-Not ("$env:PATH" -match [regex]::Escape("$installPath\bin"))) {
+        [Environment]::SetEnvironmentVariable("Path", $env:Path + ";$installPath\bin", "User") # todo: change Machine Path instead of User
+    }
+
+    # test
+    $env:Path = "$env:Path;$installPath\bin"
+    snforge --version
+    sncast --version
+
+    Write-Host "snfoundry installed" -ForegroundColor Green
 }
 
 
