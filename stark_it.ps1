@@ -25,6 +25,40 @@ function Install-Rust {
 
 function Install-Starkli {
     cargo install --locked --git https://github.com/xJonathanLEI/starkli
+
+function Install-Scarb {
+    Write-Host "Installing Scarb..." -ForegroundColor Cyan
+    $hostTriple = Get-HostTriple
+
+    # resolve latest version from github API
+    $githubAPIContent = Invoke-WebRequest -Uri "https://api.github.com/repos/software-mansion/scarb/releases/latest"
+    $content = $githubAPIContent.Content | ConvertFrom-JSON
+    $compatibleContent = $content.assets.where{ $_.name -Match $hostTriple }
+    $archiveFilename = $compatibleContent.name
+
+    # download scarb
+    $scarbURL = $compatibleContent.browser_download_url
+    $archivePath = "$env:TEMP\$archiveFilename"
+    $tempPath = "$env:TEMP\scarbTemp"
+    (New-Object Net.WebClient).DownloadFile($scarbURL, $archivePath)
+
+    # install scarb
+    $installPath = "$env:LOCALAPPDATA\Programs\scarb"
+    Expand-Archive -Force -Path "$archivePath" -DestinationPath $tempPath
+    Move-Item -Path "$tempPath\*" -Destination $installPath -Force
+    Remove-Item -Recurse $archivePath
+    Remove-Item -Recurse $tempPath
+
+    # add scarb path to environment
+    if (! ("$env:PATH" -match [regex]::Escape("$installPath\\bin"))) {
+        [Environment]::SetEnvironmentVariable("Path", $env:Path + ";$installPath\bin", "User") # todo: change Machine Path instead of User
+    }
+
+    # test
+    $env:Path = "$env:Path;$installPath\bin"
+    scarb --version
+
+    Write-Host "Scarb installed" -ForegroundColor Green
 }
 
 function main {
@@ -34,8 +68,14 @@ function main {
     }
 
     # install starkli
+    if (-Not (Get-Command starkli -errorAction SilentlyContinue)) {
     Install-Starkli
+    }
 
+    # install scarb
+    if (-Not (Get-Command scarb -errorAction SilentlyContinue)) {
+        Install-Scarb
+    }
 }
 
 main
