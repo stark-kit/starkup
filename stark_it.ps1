@@ -68,7 +68,7 @@ function Install-Scarb {
     Remove-Item -Recurse $tempPath
 
     # add scarb path to environment
-    if (! ("$env:PATH" -match [regex]::Escape("$installPath\\bin"))) {
+    if (-Not ("$env:PATH" -match [regex]::Escape("$installPath\bin"))) {
         [Environment]::SetEnvironmentVariable("Path", $env:Path + ";$installPath\bin", "User") # todo: change Machine Path instead of User
     }
 
@@ -103,7 +103,7 @@ function Install-SierraCompiler {
     Remove-Item -Recurse $tempPath
 
     # add sierra compiler path to environment
-    if (! ("$env:PATH" -match [regex]::Escape("$installPath\\bin"))) {
+    if (-Not ("$env:PATH" -match [regex]::Escape("$installPath\bin"))) {
         [Environment]::SetEnvironmentVariable("Path", $env:Path + ";$installPath\bin", "User") # todo: change Machine Path instead of User
     }
 
@@ -147,7 +147,7 @@ function main {
     }
 
     # install snfoundry
-    if (-Not (Get-Command snfoundry -errorAction SilentlyContinue)) {
+    if (-Not (Get-Command snforge -errorAction SilentlyContinue)) {
         Install-snfoundry
     }
     else {
