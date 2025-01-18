@@ -15,6 +15,7 @@ function Get-HostTriple {
 
 function Install-Rust {
     Write-Host "Installing Rust..." -ForegroundColor Cyan
+    Write-Host "IMPORTANT: You need to install Visual Studio (its native libraries & linker) during Rust installation, otherwise the starknet tools may fail to work." -ForegroundColor Red
     $exePath = "$env:TEMP\rustup-init.exe"
 
     (New-Object Net.WebClient).DownloadFile('https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe', $exePath)
