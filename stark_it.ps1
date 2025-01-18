@@ -1,3 +1,11 @@
+### Tools
+
+function Get-HostTriple {
+    # let rustup identify the host triple for us
+    return rustup show | select-string "^Default host" | ForEach-Object { $_.Line -replace (".+?(?=: ): ") }
+}
+
+
 ### Install functions
 
 function Install-Rust {
