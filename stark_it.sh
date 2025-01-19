@@ -136,6 +136,8 @@ main () {
   say "Installing snfoundry..."
   install_snfoundry
   say "snfoundry has been installed successfully."
+
+  echo "stark_it: \033[0;31m Please source your shell profile or restart your terminal to populate your environment with the new tools."
 }
 
 main
